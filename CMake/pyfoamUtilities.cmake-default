@@ -1,0 +1,29 @@
+function(pyfoam_add_module modulename)
+
+#message ("<<<-------------------------->>>")
+
+SET (FREEFOAM_LIBNAME OpenFOAM)
+
+SET (SWIG_DIRECTORIES -I/usr/include/freefoam/finiteVolume -I/usr/include/freefoam/sampling -I/usr/include/freefoam/basicThermophysicalModels -I/usr/include/freefoam/meshTools -I/usr/include/freefoam/incompressibleLESModels -I/usr/include/freefoam/incompressibleRASModels -I/usr/include/freefoam/compressibleLESModels -I/usr/include/freefoam/compressibleRASModels -I/usr/include/freefoam/radiation -I/usr/include/freefoam/incompressibleTransportModels -I/usr/include/freefoam/interfaceProperties -I/usr/include/freefoam/dynamicFvMesh -I/usr/include/freefoam/dynamicMesh -I/usr/include/freefoam/randomProcesses)
+
+SET (SWIG_PARAMETERS -c++ -MMD -D__restrict__  -DOpenFOAM_EXPORTS -DDP -DNoRepository -Dlinux -I${COMMON_DIR}/Foam/patches/r1.7.1-free -I${COMMON_DIR}/Foam/patches/r1.5-free ${SWIG_DIRECTORIES} -D__FOAM_VERSION__=010701 -D__FOAM_BRANCH__=__FREEFOAM__ -I/usr/include/freefoam -I/usr/include/freefoam/OpenFOAM -I/usr/include/freefoam/OSspecific -I/usr/include -I/usr/include/c++  -w508  -w317  -w312  -w509  -w503  -w462  -w473 -module ${modulename})
+
+SET(FREEFOAM_LIB /usr/lib/freefoam/libfiniteVolume.so;/usr/lib/freefoam/libsampling.so;/usr/lib/freefoam/libbasicThermophysicalModels.so;/usr/lib/freefoam/libmeshTools.so;/usr/lib/freefoam/libincompressibleLESModels.so;/usr/lib/freefoam/libincompressibleRASModels.so;/usr/lib/freefoam/libincompressibleTurbulenceModel.so;/usr/lib/freefoam/libcompressibleLESModels.so;/usr/lib/freefoam/libcompressibleRASModels.so;/usr/lib/freefoam/libcompressibleTurbulenceModel.so;/usr/lib/freefoam/libradiation.so;/usr/lib/freefoam/libincompressibleTransportModels.so;/usr/lib/freefoam/libinterfaceProperties.so;/usr/lib/freefoam/libdynamicFvMesh.so;/usr/lib/freefoam/libdynamicMesh.so;/usr/lib/freefoam/librandomProcesses.so;/usr/lib/freefoam/libspecie.so;/usr/lib/freefoam/libOpenFOAM.so;/usr/lib/freefoam/libmpiPstream.so)
+
+#SET (CMAKE_C_FLAGS -D__FOAM_BRANCH__=__FREEFOAM__)
+#SET (CMAKE_CXX_FLAGS "-D__FOAM_BRANCH__=__FREEFOAM__") 
+#SET (CMAKE_SHARED_LINKER_FLAGS  -D__FOAM_BRANCH__=__FREEFOAM__)
+#ADD_DEFINITIONS(-D__FOAM_BRANCH__=__FREEFOAM__)
+
+INCLUDE_DIRECTORIES( ${PYTHON_INCLUDE_PATH} ${CMAKE_CURRENT_SOURCE_DIR} ${COMMON_DIR} ${FOAM_INCLUDE_DIR}/${FREEFOAM_LIBNAME} )
+
+
+FIND_PACKAGE(PythonLibs)
+
+SET_SOURCE_FILES_PROPERTIES(${modulename}.i PROPERTIES CPLUSPLUS ON)
+SET_SOURCE_FILES_PROPERTIES(${modulename}.i PROPERTIES LANGUAGE CXX )
+SET_SOURCE_FILES_PROPERTIES(${modulename}.i PROPERTIES SWIG_FLAGS "${SWIG_PARAMETERS}")
+SWIG_ADD_MODULE(${modulename} python ${modulename}.i ${modulename}.hh)
+SWIG_LINK_LIBRARIES(${modulename} ${FREEFOAM_LIB})
+
+endfunction()

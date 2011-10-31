@@ -1,0 +1,5 @@
+README
+Foam.egg-info/PKG-INFO
+Foam.egg-info/SOURCES.txt
+Foam.egg-info/dependency_links.txt
+Foam.egg-info/top_level.txt

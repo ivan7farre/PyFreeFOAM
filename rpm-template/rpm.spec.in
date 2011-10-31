@@ -1,0 +1,105 @@
+Summary: pythonflu@FOAM_PACKAGE_SUFFIX@ package
+
+%define version @VERSION_NUMBER_PART@
+
+License: GPL
+
+Name: pythonflu@FOAM_PACKAGE_SUFFIX@
+
+Version: %{version} 
+
+Release: @BUILD_VERSION@
+
+URL: http://sourceforge.net/projects/pythonflu/
+
+Group: Applications / Engineering
+
+Packager: Alexey Petrov <alexey.petrov.nnov@gmail.com>
+
+ExclusiveArch: @OS_ARCHITECTURE@
+
+Requires: openfoam171, python >= 2.6, python < 2.7, python-setuptools
+
+Buildroot: /tmp/%{name}-%{version}-root
+
+%description
+Python wrapping for OpenFOAM (R) C++ API
+
+%prep 
+
+%build
+
+%install
+
+rm -rf $RPM_BUILD_ROOT
+
+make install DESTDIR=$RPM_BUILD_ROOT
+
+%clean 
+rm -rf $RPM_BUILD_ROOT
+
+%post
+python -c "from setuptools import setup; setup(name='Foam', version='@PACKAGE_VERSION@')" install
+
+if [ "@WITH_SOLVERS@" = "yes" ]; then
+  packages_dir=/usr/local/share/pythonFlu/solvers
+  . ${packages_dir}/install_list.sh
+  install_list=`create_install_list`
+  for package in ${install_list}; do
+    ( cd ${packages_dir}/${package} && ./setup.py develop )
+  done
+fi
+
+
+%preun
+install_path=`python -c "import os; import Foam; print os.path.dirname( os.path.dirname( os.path.abspath( Foam.__file__ ) ) )"`
+
+if [ "@WITH_SOLVERS@" = "yes" ]; then
+  packages_dir=/usr/local/share/pythonFlu/solvers
+  . ${packages_dir}/install_list.sh
+  install_list=`create_install_list`
+  while [ "x${install_list}" != "x" ]; do
+     package=`echo ${install_list} | grep -o -e "[A-Z,a-z]*$"`
+     easy_install -m $package
+     rm -rf ${install_path}/${package}.egg*
+     rm -f /usr/local/bin/${package}
+     tmp_file="/tmp/tmp_easy-install.pth"
+     cat ${install_path}/easy-install.pth | sed -e "s/\/usr\/local\/share\/pythonFlu\/solvers\/${package}//" | sed '/./!d' > ${tmp_file}
+     mv -f ${tmp_file} ${install_path}/easy-install.pth
+     install_list=`echo ${install_list} | sed -e "s/${package}$//" | sed -e "s/ $//"`
+  done
+fi
+easy_install -m Foam
+rm -rf ${install_path}/Foam-*.egg*
+
+tmp_file="/tmp/tmp_easy-install.pth"
+cat ${install_path}/easy-install.pth | sed -e "s/.*Foam-.*-py@PYTHON_VERSION@.egg//" | sed '/./!d' > ${tmp_file}
+mv -f ${tmp_file} ${install_path}/easy-install.pth
+
+
+%postun
+case ${1} in
+   # remove package
+   0)
+     install_path=`python -c "import os; import Foam; print os.path.dirname( os.path.dirname( os.path.abspath( Foam.__file__ ) ) )"`
+     rm -rf ${install_path}/Foam
+     if [ "@WITH_SOLVERS@" = "yes" ]; then
+       rm -rf /usr/local/share/pythonFlu
+     fi
+     if [ "@WITH_CONFFLU@" = "yes" ]; then
+       rm -rf /usr/local/share/confFlu
+     fi
+   ;;
+   # install
+   1)
+   ;;
+   # uprgade
+   2)
+   ;;
+esac
+
+%files
+%defattr(-, root, root)
+
+
+

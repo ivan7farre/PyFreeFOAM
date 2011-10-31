@@ -1,0 +1,51 @@
+//  pythonFlu - Python wrapping for OpenFOAM C++ API
+//  Copyright (C) 2010- Alexey Petrov
+//  Copyright (C) 2009-2010 Pebble Bed Modular Reactor (Pty) Limited (PBMR)
+//  
+//  This program is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//  
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//  
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//  See http://sourceforge.net/projects/pythonflu
+//
+//  Author : Alexey PETROV
+
+
+//---------------------------------------------------------------------------
+#ifndef fvMesh_hpp
+#define fvMesh_hpp
+
+
+//---------------------------------------------------------------------------
+%import "Foam/src/OpenFOAM/meshes/polyMesh/polyMesh.i"
+
+%import "Foam/src/OpenFOAM/containers/Lists/List/List_polyPatchPtr.i"
+
+%import "Foam/src/OpenFOAM/db/Time/Time.i"
+
+%import "Foam/src/OpenFOAM/db/objectRegistry.i"
+
+%import "Foam/src/OpenFOAM/meshes/lduMesh.i"
+
+%import "Foam/src/OpenFOAM/matrices/lduMatrix/lduAddressing/lduAddressing.i"
+
+%include "Foam/src/finiteVolume/fvMesh/fvBoundaryMesh.cpp"
+
+%include "Foam/src/finiteVolume/interpolation/surfaceInterpolation/surfaceInterpolation.cpp"
+
+%include "Foam/src/finiteVolume/fields/volFields/volFieldsFwd.hpp"
+
+%include "Foam/src/finiteVolume/fields/surfaceFields/surfaceFieldsFwd.hpp"
+
+
+//---------------------------------------------------------------------------
+#endif

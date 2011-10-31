@@ -1,0 +1,177 @@
+#!/bin/bash
+
+## pythonFlu - Python wrapping for OpenFOAM C++ API
+## Copyright (C) 2010- Alexey Petrov
+## Copyright (C) 2009-2010 Pebble Bed Modular Reactor (Pty) Limited (PBMR)
+## 
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+## 
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+## 
+## See http://sourceforge.net/projects/pythonflu
+##
+## Author : Alexey PETROV
+##
+
+
+#--------------------------------------------------------------------------------------
+# Prepare variables for substition in  control,changelog etc files
+export DEBEMAIL='alexey.petrov.nnov@gmail.com'
+export DEBFULLNAME="Alexey Petrov"
+
+
+#--------------------------------------------------------------------------------------
+silent_dh_make()
+{
+template_folder=$1
+package_name=$2
+
+expect  <<EOD
+spawn dh_make -s -createorig -c gpl --templates ${template_folder} -p ${package_name}
+expect "Hit <enter> to confirm:"
+send "\r"
+wait 10
+expect eof
+EOD
+}
+
+
+#--------------------------------------------------------------------------------------
+# read build option "launchpad"( key "-S" -source for "dpkg-buildpackage" ) or "deb"(key "-b" binary for "dpkg-buildpackage" ) 
+build_option=$1
+
+
+foam_package_suffix=@FOAM_PACKAGE_SUFFIX@
+pythonflu_version=@PACKAGE_VERSION@
+
+package_name="pythonflu${foam_package_suffix}"
+
+build_version=@BUILD_VERSION@
+
+package_version=${pythonflu_version}-${build_version}
+
+curr_folder=@abs_top_builddir@
+package_folder=${curr_folder}/${package_name}-${package_version}
+template_folder=${curr_folder}/deb-template
+
+pgp_key_id=@PGP_KEY_ID@
+
+
+#--------------------------------------------------------------------------------------
+# Prepare folder for deb-packaging and copy folder "Foam" to it 
+# first cleaning package files, folders with the same name( ${package_name}-${package_version} ) from the last attempt
+rm -rf ${package_name}-${package_version}*
+rm -rf ${package_name}_${package_version}*
+
+install -d ${package_folder}
+echo "--------------------------------------------------------------------------------"
+echo "Copying \"Foam\" to ${package_folder}"
+echo "--------------------------------------------------------------------------------"
+cp -rf Foam ${package_folder}
+mkdir ${package_folder}/admin
+cp -rf admin/pythonflu*.m4 ${package_folder}/admin/
+
+
+#--------------------------------------------------------------------------------------
+# prepare external packages
+if [ "@WITH_CONFFLU@" = "yes" ]; then
+    if [ "x${CONFFLU_ROOT_DIR}" = "x" ]; then
+       echo
+       echo "$0: It is necessary to source CONFFLU" >&2
+       exit 1
+    fi
+    
+    echo "--------------------------------------------------------------------------------"
+    echo "prepare confFlu..."
+    echo "--------------------------------------------------------------------------------"
+    mkdir ${package_folder}/confFlu
+    mkdir ${package_folder}/confFlu/admin
+    cp -rf ${CONFFLU_ROOT_DIR}/admin/confflu*.m4 ${package_folder}/confFlu/admin/
+    cp -rf ${CONFFLU_ROOT_DIR}/build_configure ${package_folder}/confFlu/
+    cp -rf ${CONFFLU_ROOT_DIR}/env.sh ${package_folder}/confFlu/bashrc 
+fi
+
+if [ "@WITH_SOLVERS@" = "yes" ]; then
+    echo "--------------------------------------------------------------------------------"
+    echo "prepare solvers & models..."
+    
+    solvers_folder=${package_folder}/solvers
+    mkdir ${solvers_folder}
+    
+    ( cd ${solvers_folder} && wget https://afgan.svn.sourceforge.net/svnroot/afgan/pyfoam_testing/trunk/install_list.sh ) >/dev/null
+    source ${solvers_folder}/install_list.sh
+    install_list=`create_install_list`
+    
+    for package in ${install_list}; do  
+       ( cd ${solvers_folder} && git clone git://github.com/asimurzin/${package}.git ${package} )
+      #cp -rf solvers/${package} ${solvers_folder} 
+    done
+fi
+
+
+#--------------------------------------------------------------------------------------
+# remove all unnecessary from the ${package_folder}
+echo "cleaning h, o, etc..."
+echo "--------------------------------------------------------------------------------"
+(cd ${package_folder} && find \( -name "*.h" \) -delete)
+(cd ${package_folder} && find \( -name "*.cc" -o -name "*.exe" \) -delete)
+(cd ${package_folder} && find \( -name "*.d" -o -name "*.o" -o -name "*.in" -o -name "Makefile" -o -name "*.pyc" \) -delete)
+(cd ${package_folder} && find -name ".git" -exec rm -rf {} \; 2>/dev/null)
+
+
+#--------------------------------------------------------------------------------------
+# create folder debian with control,changelog, etc files
+echo "create debian folder and all necessary files( control, changelog etc ) in it "
+echo "--------------------------------------------------------------------------------"
+cp ${template_folder}/Makefile ${package_folder}
+cp ${curr_folder}/ChangeLog deb-template/changelog
+( cd ${package_folder} && silent_dh_make ${template_folder} ${package_name} )
+echo "--------------------------------------------------------------------------------"
+
+
+#--------------------------------------------------------------------------------------
+# replace readme and copyrights
+echo "copying readme and copyrights"
+cp -f ${curr_folder}/README ${package_folder}/debian/README.Debian
+cp -f ${curr_folder}/README ${package_folder}/debian/README.source
+cp -f ${curr_folder}/deb-template/copyright ${package_folder}/debian/
+echo "--------------------------------------------------------------------------------"
+
+
+#---------------------------------------------------------------------------------------
+# create package
+echo "create package"
+echo "--------------------------------------------------------------------------------"
+
+pgp_key_option="-k${pgp_key_id}"
+if [ "x${pgp_key_id}" = "x" ];then
+   pgp_key_option=""
+fi
+
+if [ "${build_option}" = "launchpad" ]; then 
+   ( cd ${package_folder} && dpkg-buildpackage -rfakeroot -S ${pgp_key_option} )
+   echo "--------------------------------------------------------------------------------"
+   echo "upload to launchpad"
+   echo "--------------------------------------------------------------------------------"
+   changes_file="${package_name}_${package_version}_source.changes"
+   dput ppa:flu-team/@OS_ARCHITECTURE@ ${changes_file}
+fi
+
+if [ "${build_option}" = "deb" ]; then 
+   ( cd ${package_folder} && dpkg-buildpackage -rfakeroot ${pgp_key_option} -b )
+   a_deb_filename=${package_name}_${package_version}_@OS_ARCHITECTURE@.deb
+   a_new_filename=${package_name}_${package_version}_@UBUNTU_CODENAME@_@OS_ARCHITECTURE@.deb
+   ( cd ${curr_folder} &&  mv -f ./${a_deb_filename} ./${a_new_filename} )
+fi
+
+
+#---------------------------------------------------------------------------------------

@@ -1,0 +1,60 @@
+## pythonFlu - Python wrapping for OpenFOAM C++ API
+## Copyright (C) 2010- Alexey Petrov
+## Copyright (C) 2009-2010 Pebble Bed Modular Reactor (Pty) Limited (PBMR)
+## 
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+## 
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+## 
+## See http://sourceforge.net/projects/pythonflu
+##
+## Author : Alexey PETROV
+##
+
+
+#--------------------------------------------------------------------------------------
+DESTDIR=
+PYTHON_FLU_LIB=$(DESTDIR)/usr/local/lib/python2.6/site-packages/
+
+BUILD_DIR=/usr/src/packages/BUILD
+libs_preparation_dir=$(BUILD_DIR)
+
+M4DIR=$(DESTDIR)/usr/local/share/pythonFlu
+
+preparation:$(libs_preparation_dir)/Foam
+
+$(libs_preparation_dir)/Foam:
+	@ cp -rf Foam $(libs_preparation_dir)/
+	@ cp -rf admin $(libs_preparation_dir)/
+ifeq "@WITH_CONFFLU@" "yes"
+	@ cp -rf confFlu $(libs_preparation_dir)/
+endif 
+ifeq "@WITH_SOLVERS@" "yes"
+	@ cp -rf solvers $(libs_preparation_dir)/
+endif 
+
+
+install: $(PYTHON_FLU_LIB)/Foam
+
+$(PYTHON_FLU_LIB)/Foam: 
+	@ install -d $(PYTHON_FLU_LIB) $(M4DIR)
+	@ cp -rf $(libs_preparation_dir)/Foam $(PYTHON_FLU_LIB)/
+	@ cp -rf $(libs_preparation_dir)/admin $(M4DIR)
+ifeq "@WITH_CONFFLU@" "yes"
+	@ cp -rf $(libs_preparation_dir)/confFlu $(DESTDIR)/usr/local/share/
+endif 
+ifeq "@WITH_SOLVERS@" "yes"
+	@ cp -rf $(libs_preparation_dir)/solvers $(DESTDIR)/usr/local/share/pythonFlu/
+endif 
+
+
+#--------------------------------------------------------------------------------------     	

@@ -1,0 +1,239 @@
+## pythonFlu - Python wrapping for OpenFOAM C++ API
+## Copyright (C) 2010- Alexey Petrov
+## Copyright (C) 2009-2010 Pebble Bed Modular Reactor (Pty) Limited (PBMR)
+## 
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+## 
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+## 
+## See http://sourceforge.net/projects/pythonflu
+##
+## Author : Alexey PETROV
+##
+
+
+#--------------------------------------------------------------------------------------
+pythonflu_root_dir:=@abs_top_builddir@
+
+include @abs_top_builddir@/Foam/foam.version.makefile
+
+
+#--------------------------------------------------------------------------------------
+__CPPFLAGS__ := $(__CPPFLAGS__) \
+	@OPENFOAM_FINITEVOLUME_CPPFLAGS@ \
+	@OPENFOAM_BASICTHERMOPHYSICALMODELS_CPPFLAGS@ \
+	@OPENFOAM_MESHTOOLS_CPPFLAGS@ \
+	@OPENFOAM_SPECIE_CPPFLAGS@
+
+
+#-------------------------------------------------------------------------------------
+__LDFLAGS__ := $(__LDFLAGS__) \
+	@OPENFOAM_FINITEVOLUME_LIBS@ \
+	@OPENFOAM_BASICTHERMOPHYSICALMODELS_LIBS@ \
+	@OPENFOAM_MESHTOOLS_LIBS@ \
+	@OPENFOAM_SPECIE_LIBS@	
+
+
+#--------------------------------------------------------------------------------------
+fvMeshes_sources = \
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMesh/fvPatches/fvPatch.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/PtrList_fvPatch.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMesh/fvPatches/fvPatchList.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMesh/fvBoundaryMesh.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/fvPatchField.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/fvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/fvPatchField_vector.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvsPatchFields/fvsPatchField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvsPatchFields/fvsPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvsPatchFields/fvsPatchField_vector.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvsPatchFields/fvsPatchField_tensor.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/surfaceInterpolation.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField_scalar_surfaceMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField_scalar_fvsPatchField_surfaceMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_surfaceScalarField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_surfaceScalarField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/surfaceFields/surfaceScalarField.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField_vector_surfaceMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField_vector_fvsPatchField_surfaceMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_surfaceVectorField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_surfaceVectorField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/surfaceFields/surfaceVectorField.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField_tensor_surfaceMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField_tensor_fvsPatchField_surfaceMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_surfaceTensorField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_surfaceTensorField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/surfaceFields/surfaceTensorField.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/surfaceFields/surfaceFields.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField_scalar_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_DimensionedField_scalar_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/FieldFields/FieldField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_fvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_fvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/FieldFields/FieldField_fvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_FieldField_fvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField_scalar_fvPatchField_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_volScalarField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_volScalarField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/volFields/volScalarField.i \
+	\
+	@abs_top_builddir@/ext/common/finiteVolume/ext_tmp/ext_tmp_volScalarField.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField_vector_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_DimensionedField_vector_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_fvPatchField_vector.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_fvPatchField_vector.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/PtrList_fvPatchField_vector.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/FieldFields/FieldField_fvPatchField_vector.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_FieldField_fvPatchField_vector.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField_vector_fvPatchField_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_volVectorField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_volVectorField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/volFields/volVectorField.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField_tensor_volMesh.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/fvPatchField_tensor.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/FieldFields/FieldField_fvPatchField_tensor.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField_tensor_fvPatchField_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_volTensorField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_volTensorField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/volFields/volTensorField.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField_sphericalTensor_volMesh.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/fvPatchField_sphericalTensor.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/FieldFields/FieldField_fvPatchField_sphericalTensor.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField_SphericalTensor_fvPatchField_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_volSphericalTensorField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_volSphericalTensorField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/volFields/volSphericalTensorField.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/DimensionedFields/DimensionedField_symmTensor_volMesh.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/fvPatchField_symmTensor.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/FieldFields/FieldField_fvPatchField_symmTensor.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/GeometricFields/GeometricField_SymmTensor_fvPatchField_volMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_volSymmTensorField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_volSymmTensorField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/volFields/volSymmTensorField.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/volFields/volFields.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMesh/fvMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/meshes/GeoMesh_fvMesh.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/volMesh.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/surfaceMesh.i
+
+
+#--------------------------------------------------------------------------------------
+fvMatrices_sources = \
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMatrices/fvMatrix.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMatrices/fvScalarMatrix.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_fvScalarMatrix.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMatrices/fvVectorMatrix.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_fvVectorMatrix.i \
+
+
+#--------------------------------------------------------------------------------------
+sources = \
+	@abs_top_builddir@/Foam/src/finiteVolume/finiteVolume/fvSchemes.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/finiteVolume/fvSolution.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMesh/fvMeshes.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/autoPtr_fvMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/PtrList_fvMesh.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/PtrList_volScalarField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/PtrList_volVectorField.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/PtrList_surfaceScalarField.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/finiteVolume/snGradSchemes/snGradScheme.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMatrices/fvMatrices.i \
+	\
+	@abs_top_builddir@/Foam/src/OpenFOAM/db/Time/subCycleTime.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/algorithms/subCycle/subCycle.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/algorithms/subCycle/subCycle_volScalarField.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/schemes/linear.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/cfdTools/general/findRefCell.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/cfdTools/general/adjustPhi.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/cfdTools/general/bound.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/zeroGradient/zeroGradientFvPatchField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/zeroGradient/zeroGradientFvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/zeroGradient/zeroGradientFvPatchField_vector.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/zeroGradient/zeroGradientFvPatchField_tensor.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/zeroGradient/zeroGradientFvPatchFields.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/basic/calculated/calculatedFvPatchField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/basic/calculated/calculatedFvPatchField_scalar.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/basic/fixedGradient/fixedGradientFvPatchField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/basic/fixedGradient/fixedGradientFvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/basic/fixedGradient/fixedGradientFvPatchField_vector.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/basic/mixed/mixedFvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvPatchFields/basic/fixedValue/fixedValueFvPatchField_scalar.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/cfdTools/general/porousMedia/porousZone.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/PtrList_porousZone.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/IOPtrList/IOPtrList_porousZone.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/cfdTools/general/porousMedia/porousZones.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvsPatchFields/basic/calculated/calculatedFvsPatchFieldsFwd.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvsPatchFields/basic/calculated/calculatedFvsPatchField.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/fields/fvsPatchFields/basic/calculated/calculatedFvsPatchField_scalar.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/fvMesh/fvPatches/derived/wallFvPatch.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/surfaceInterpolationScheme/surfaceInterpolationScheme.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/surfaceInterpolationScheme/surfaceInterpolationScheme_scalar.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_surfaceInterpolationScheme_scalar.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/surfaceInterpolationScheme/surfaceInterpolationScheme_vector.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_surfaceInterpolationScheme_vector.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/multivariateSchemes/multivariateSurfaceInterpolationScheme/multivariateSurfaceInterpolationScheme.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/multivariateSchemes/multivariateSurfaceInterpolationScheme/multivariateSurfaceInterpolationScheme_scalar.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/fields/tmp/tmp_multivariateSurfaceInterpolationScheme_scalar.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/multivariateSchemes/multivariateSurfaceInterpolationScheme/multivariateSurfaceInterpolationScheme_vector.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/schemes/weighted/weighted.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/schemes/weighted/weighted_vector.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/limitedSchemes/limitedSurfaceInterpolationScheme/limitedSurfaceInterpolationScheme.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/limitedSchemes/limitedSurfaceInterpolationScheme/limitedSurfaceInterpolationScheme_vector.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/limitedSchemes/LimitedScheme/LimitFuncs.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/limitedSchemes/LimitedScheme/NVDTVD.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/limitedSchemes/MUSCL/MUSCL.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/limitedSchemes/MUSCL/MUSCL_NVDTVD.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/limitedSchemes/LimitedScheme/LimitedScheme.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/interpolation/surfaceInterpolation/limitedSchemes/LimitedScheme/LimitedScheme_vector_MUSCLLimiter_NVDTVD_limitFuncs_magSqr.i \
+	\
+	@abs_top_builddir@/Foam/src/finiteVolume/cfdTools/general/MRF/MRFZone.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/PtrList_MRFZone.i \
+	@abs_top_builddir@/Foam/src/OpenFOAM/containers/Lists/PtrList/IOPtrList/IOPtrList_MRFZone.i \
+	@abs_top_builddir@/Foam/src/finiteVolume/cfdTools/general/MRF/MRFZones.i \
+	
+	
+	
+
+#--------------------------------------------------------------------------------------
+include @abs_top_builddir@/Foam/include.foam.makefile
+
+
+#--------------------------------------------------------------------------------------
